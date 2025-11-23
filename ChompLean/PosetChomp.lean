@@ -56,7 +56,7 @@ def Board.move (b : Board α) (p : α) : Option (Board α) :=
     let downClosed : ∀ p q, p ∈ cells → q ≤ p → q ∈ cells := by
       cases b with grind
     --
-    some <| .mk cells hasBot downClosed -- p が合法手の場合
+    some <| .mk cells hasBot downClosed -- p が合法手の場合 some b'
   else
     none -- p が合法手でない場合は失敗
 
