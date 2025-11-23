@@ -70,13 +70,11 @@ def Board.legalMove (b b' : Board α) : Prop :=
 @[simp, grind ., grind →]
 theorem Board.move_size_lt {b b' : Board α} (h : legalMove b b') :
   sizeOf b' < sizeOf b := by
+  simp_all
   obtain ⟨p, hp⟩ := h
-  simp_all
   obtain ⟨hv, heq⟩ := hp
-  rw [← heq]
-  simp_all
   apply Finset.card_lt_card
-  simp_all [Finset.filter_ssubset]
+  simp_all [← heq, Finset.filter_ssubset]
   use p
   constructor
   · grind
@@ -105,7 +103,7 @@ theorem Board.terminal_losing :
 
 /- ## 初期盤面の特徴付け -/
 
-/-- 真の最大元(最小限と異なる最大限)が存在する -/
+/-- 真の最大元(最小元と異なる最大元)が存在する -/
 def Board.hasTtop (b : Board α) : Prop :=
   ∃ ttop ∈ b.cells, (∀ a ∈ b.cells, a ≤ ttop) ∧ ttop ≠ ⊥
 
