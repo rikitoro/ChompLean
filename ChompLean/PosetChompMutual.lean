@@ -108,32 +108,25 @@ end
 theorem Board.terminal_losing :
   terminal α |>.losing := by
   grind
-/-- 最終盤面は勝ち盤面ではない -/
-@[simp, grind .]
-theorem Board.terminal_not_winning :
-  ¬ (terminal α |>.winning):= by
-  grind
 
 /-- 結局 losing は winning の否定 -/
 @[simp, grind =]
 theorem Board.losing_iff_not_winning' (b : Board α) :
   b.losing ↔ ¬ b.winning := by
-  by_cases ht : b.isTerminal
-  . grind
-  . apply Iff.intro <;> intro h
-    . rw [winning]
-      push_neg
-      intro b' hbb'
-      have ih : b'.losing ↔ ¬ b'.winning := by -- 数学的帰納法
-        have hlt : sizeOf b' < sizeOf b := by grind
-        apply losing_iff_not_winning' b' -- 自身を再帰で呼ぶ (hlt で整礎性を示す)
-      grind
-    . rw [losing]
-      intro b' hbb'
-      have ih : b'.losing ↔ ¬ b'.winning := by -- 数学的帰納法
-        have hlt : sizeOf b' < sizeOf b := by grind
-        apply losing_iff_not_winning' b' -- 自身を再帰で呼ぶ (hlt で整礎性を示す)
-      grind
+  apply Iff.intro <;> intro h
+  . rw [winning]
+    push_neg
+    intro b' hbb'
+    have ih : b'.losing ↔ ¬ b'.winning := by -- 数学的帰納法
+      have hlt : sizeOf b' < sizeOf b := by grind
+      apply losing_iff_not_winning' b' -- 自身を再帰で呼ぶ (hlt で整礎性を示す)
+    grind
+  . rw [losing]
+    intro b' hbb'
+    have ih : b'.losing ↔ ¬ b'.winning := by -- 数学的帰納法
+      have hlt : sizeOf b' < sizeOf b := by grind
+      apply losing_iff_not_winning' b' -- 自身を再帰で呼ぶ (hlt で整礎性を示す)
+    grind
 
 
 /- ## 初期盤面の特徴付け -/
