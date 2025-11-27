@@ -90,7 +90,7 @@ def Board.winning (b : Board α) : Prop :=
   decreasing_by grind
 
 /-- 盤面 b が負け盤面である
-  どんな一手をとっても相手に勝ち盤面を与える -/
+  (どんな一手をとっても相手に勝ち盤面を与える) -/
 @[simp, grind]
 def Board.losing (b : Board α) : Prop :=
   ¬ b.winning
@@ -113,7 +113,7 @@ def Board.hasTtop (b : Board α) : Prop :=
   はじめから p を取る手順と同じ盤面を与える (1手目はキャンセルできる) -/
 @[simp, grind ., grind →]
 theorem Board.move_move_of_le {b b₁ b₂ : Board α} {p q : α}
-  (hqp : p ≤ q) (h₁ : b.move q = some b₁) (h₂ : b₁.move p = some b₂) :
+  (hpq : p ≤ q) (h₁ : b.move q = some b₁) (h₂ : b₁.move p = some b₂) :
   b.move p = some b₂ := by
   simp_all
   obtain ⟨q', hq'⟩ := h₁

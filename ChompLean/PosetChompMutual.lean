@@ -10,11 +10,11 @@ import Mathlib.Order.Basic
 /- ## ゲーム盤面の定義 -/
 
 variable {α : Type}
-  [PartialOrder α] [OrderBot α] [DecidableEq α] [DecidableRel (α := α) (· ≤ ·)]
+  [PartialOrder α] [OrderBot α] [DecidableEq α] [@DecidableRel α α (· ≤ ·)]
 
 /-- ゲーム盤面 -/
 structure Board (α : Type) -- α は各セルを表す型
-  [PartialOrder α] [OrderBot α] [DecidableEq α] [DecidableRel (α := α) (· ≤ ·)]
+  [PartialOrder α] [OrderBot α] [DecidableEq α] [@DecidableRel α α (· ≤ ·)]
   where
   cells : Finset α    -- 残っているセルの(有限)集合
   hasBot : ⊥ ∈ cells -- 毒セルが含まれる
@@ -94,7 +94,7 @@ def Board.winning (b : Board α) : Prop :=
   decreasing_by grind
 
 /-- 盤面 b が負け盤面である
-  どんな一手をとっても相手に勝ち盤面を与える -/
+  どんな一手をとっても相手に勝ち盤面を与えてしまう -/
 @[grind]
 def Board.losing (b : Board α) : Prop :=
   ∀ (b' : Board α), legalMove b b' → b'.winning
@@ -113,18 +113,18 @@ theorem Board.terminal_losing :
 theorem Board.losing_iff_not_winning' (b : Board α) :
   b.losing ↔ ¬ b.winning := by
   apply Iff.intro <;> intro h
-  . rw [winning]
+  · rw [winning]
     push_neg
     intro b' hbb'
     have ih : b'.losing ↔ ¬ b'.winning := by -- 数学的帰納法
       have hlt : sizeOf b' < sizeOf b := by grind
-      apply losing_iff_not_winning' b' -- 自身を再帰で呼ぶ (hlt で整礎性を示す)
+      exact losing_iff_not_winning' b' -- 自身を再帰で呼ぶ (hlt で整礎性を示す)
     grind
-  . rw [losing]
+  · rw [losing]
     intro b' hbb'
     have ih : b'.losing ↔ ¬ b'.winning := by -- 数学的帰納法
       have hlt : sizeOf b' < sizeOf b := by grind
-      apply losing_iff_not_winning' b' -- 自身を再帰で呼ぶ (hlt で整礎性を示す)
+      exact losing_iff_not_winning' b' -- 自身を再帰で呼ぶ (hlt で整礎性を示す)
     grind
 
 
@@ -140,7 +140,7 @@ def Board.hasTtop (b : Board α) : Prop :=
   はじめから p を取る手順と同じ盤面を与える (1手目はキャンセルできる) -/
 @[simp, grind ., grind →]
 theorem Board.move_move_of_le {b b₁ b₂ : Board α} {p q : α}
-  (hqp : p ≤ q) (h₁ : b.move q = some b₁) (h₂ : b₁.move p = some b₂) :
+  (hpq : p ≤ q) (h₁ : b.move q = some b₁) (h₂ : b₁.move p = some b₂) :
   b.move p = some b₂ := by
   simp_all
   obtain ⟨q', hq'⟩ := h₁
