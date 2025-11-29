@@ -16,49 +16,49 @@ bot(⊥) = (0,0)   (0,1)   ⋯  (0,n-1)
 -/
 
 /-- Chomp の盤面のマスを表す型 -/
-abbrev Cell := ℕ × ℕ
+abbrev Piece := ℕ × ℕ
 
 @[simp, grind]
-def Cell.le (p q : Cell) : Prop :=
+def Piece.le (p q : Piece) : Prop :=
   p.fst ≤ q.fst ∧ p.snd ≤ q.snd
 
 @[simp, grind]
-instance Cell.LE : LE Cell where
-  le := Cell.le
+instance Piece.LE : LE Piece where
+  le := Piece.le
 
 @[simp, grind =]
-theorem Cell.le_def {p q : Cell} :
+theorem Piece.le_def {p q : Piece} :
   p ≤ q ↔ p.fst ≤ q.fst ∧ p.snd ≤ q.snd := by
   rfl
 
 /-- Chomp の毒マス (0, 0) -/
 @[simp, grind]
-def Cell.bot : Cell := (0, 0)
+def Piece.bot : Piece := (0, 0)
 
-notation "⊥" => Cell.bot
+notation "⊥" => Piece.bot
 
 @[simp, grind .]
-theorem Cell.bot_le : ∀ p, ⊥ ≤ p := by
+theorem Piece.bot_le : ∀ p, ⊥ ≤ p := by
   intro p
   grind
 
 /-- Chomp の 2 次元盤面の定義 -/
 structure Board where
-  cells : Finset Cell   -- 残っているマスの集合
-  hasBot : ⊥ ∈ cells  -- 毒マス⊥が含まれている
+  pieces : Finset Piece   -- 残っているマスの集合
+  hasBot : ⊥ ∈ pieces  -- 毒マス⊥が含まれている
   downClosed :          -- マス p が残っていればその左下マス q (q ≤ p)も残っている
-    ∀ p q, p ∈ cells → q ≤ p → q ∈ cells
+    ∀ p q, p ∈ pieces → q ≤ p → q ∈ pieces
 
 /-- 盤面のサイズをマスの数で定める
   NOTE : winning の定義が整礎再帰であることを示す際に使う -/
 instance Board.SizeOf : SizeOf Board where
-  sizeOf b := b.cells.card
+  sizeOf b := b.pieces.card
 
 /-- 最終盤面の定義
   毒マス ⊥ のみ残っている -/
 @[simp, grind]
 def Board.terminal : Board where
-  cells := {⊥}
+  pieces := {⊥}
   hasBot := by grind
   downClosed := by
     intro p q hp hqp
@@ -75,26 +75,26 @@ def Board.isTerminal (b : Board) : Prop :=
   残っているマス p をとったらその右下のマス q (p ≤ q) もすべて削除した盤面 b を返す(some b)
   毒マスや残っているマス以外をとった場合は失敗none -/
 @[simp, grind]
-def Board.move (b : Board) (p : Cell) : Option Board :=
-  if h : p ∈ b.cells ∧ p ≠ ⊥ then
+def Board.move (b : Board) (p : Piece) : Option Board :=
+  if h : p ∈ b.pieces ∧ p ≠ ⊥ then
     --
-    let cells := { q ∈ b.cells | ¬ p ≤ q } -- b.cells.filter (fun q ↦ ¬ p ≤ q)
+    let pieces := { q ∈ b.pieces | ¬ p ≤ q } -- b.Pieces.filter (fun q ↦ ¬ p ≤ q)
     --
-    let botIn : ⊥ ∈ cells := by
-      simp [cells]
+    let botIn : ⊥ ∈ pieces := by
+      simp [pieces]
       cases b with grind
     --
-    let downClosed : ∀ p q, p ∈ cells → q ≤ p → q ∈ cells := by
+    let downClosed : ∀ p q, p ∈ pieces → q ≤ p → q ∈ pieces := by
       cases b with grind
     --
-    some <| .mk cells botIn downClosed
+    some <| .mk pieces botIn downClosed
   else
     none
 
 /-- b から b' へ合法手 1 手で進めることができる -/
 @[simp, grind]
 def Board.legalMove (b b' : Board) : Prop :=
-  ∃ p : Cell, b.move p = some b'
+  ∃ p : Piece, b.move p = some b'
 
 
 /-- 一手進めると盤面のマスの数は必ず減る
@@ -142,7 +142,7 @@ theorem Board.terminal_losing :
 /-- m × n の長方形の盤面 -/
 @[simp, grind]
 def Board.rectBoard (m n : ℕ) (hm : 0 < m) (hn : 0 < n) : Board where
-  cells := (Finset.range m).product (Finset.range n)
+  pieces := (Finset.range m).product (Finset.range n)
   hasBot := by
     simp_all [Finset.mem_product]
   downClosed := by
@@ -150,33 +150,33 @@ def Board.rectBoard (m n : ℕ) (hm : 0 < m) (hn : 0 < n) : Board where
     simp_all
     grind
 
-/-- 長方形の盤面の一番右上のマス -/
+/-- 長方形の盤面の一番右上のピース -/
 @[simp, grind]
-def Cell.top (m n : ℕ) : Cell :=
+def Piece.ttop (m n : ℕ) : Piece :=
   (m - 1, n - 1)
 
-/-- 初期盤面では top ≠ ⊥ -/
+/-- 初期盤面では ttop ≠ ⊥ -/
 @[simp, grind →, grind .]
-theorem Cell.top_ne_bot {m n : ℕ} {b : Board}
+theorem Piece.top_ne_bot {m n : ℕ} {b : Board}
   (hm : 0 < m) (hn : 0 < n)
   (h : b = Board.rectBoard m n hm hn) (hnterm : ¬ b.isTerminal) :
-  top m n ≠ ⊥ := by
+  ttop m n ≠ ⊥ := by
   simp_all
   grind
 
 @[simp, grind →, grind .]
-theorem Cell.le_top {m n : ℕ} {b : Board} {p : Cell}
+theorem Piece.le_top {m n : ℕ} {b : Board} {p : Piece}
   (hm : 0 < m) (hn : 0 < n)
-  (h : b = Board.rectBoard m n hm hn) (hp : p ∈ b.cells) :
-  p ≤ top m n := by
+  (h : b = Board.rectBoard m n hm hn) (hp : p ∈ b.pieces) :
+  p ≤ ttop m n := by
   simp_all
   grind
 
 @[simp, grind →, grind .]
-theorem Cell.top_in_rectBoard {m n : ℕ} {b : Board}
+theorem Piece.top_in_rectBoard {m n : ℕ} {b : Board}
   (hm : 0 < m) (hn : 0 < n)
   (h : b = Board.rectBoard m n hm hn) (hnterm : ¬ b.isTerminal) :
-  top m n ∈ b.cells := by
+  ttop m n ∈ b.pieces := by
   simp_all
   grind
 
@@ -188,7 +188,7 @@ theorem Cell.top_in_rectBoard {m n : ℕ} {b : Board}
 /-- p ≤ q ならば、「先に q で move して p で move」と
   「初めから p で move」は同じ盤面を与える -/
 @[simp, grind ., grind →]
-theorem Board.move_move_of_le {b b₁ b₂ : Board} {p q : Cell}
+theorem Board.move_move_of_le {b b₁ b₂ : Board} {p q : Piece}
   (hqp : p ≤ q) (h₁ : b.move q = some b₁) (h₂ : b₁.move p = some b₂) :
   b.move p = some b₂ := by
   simp_all
@@ -206,7 +206,7 @@ theorem Board.rectBoard_winning {m n b hm hn}
   b.winning := by
 
   -- (Aliceが) top を食べる
-  let top := Cell.top m n
+  let top := Piece.ttop m n
   have h_move_top : ∃ b₁, b.move top = some b₁ := by
     simp [move, top]
     grind

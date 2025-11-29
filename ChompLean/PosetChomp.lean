@@ -7,30 +7,30 @@ import Mathlib.Order.Basic
 
 /- ## ゲーム盤面の定義 -/
 
-variable {α : Type}
-  [PartialOrder α] [OrderBot α] [DecidableEq α] [DecidableRel (α := α) (· ≤ ·)]
+variable {α : Type}  -- 各ピースの型：最小元(毒ピース)を持つ半順序集合
+  [PartialOrder α] [OrderBot α] [DecidableEq α] [DecidableLE α]
 
 /-- ゲーム盤面 -/
-structure Board (α : Type) -- α は各セルを表す型
-  [PartialOrder α] [OrderBot α] [DecidableEq α] [DecidableRel (α := α) (· ≤ ·)]
+structure Board (α : Type) -- α は各ピースを表す型
+  [PartialOrder α] [OrderBot α] [DecidableEq α] [DecidableLE α]
   where
-  cells : Finset α    -- 残っているセルの(有限)集合
-  hasBot : ⊥ ∈ cells -- 毒セルが含まれる
-  downClosed : -- 残っているセルの集合は下に閉
-    ∀ p q, p ∈ cells → q ≤ p → q ∈ cells
+  pieces : Finset α     -- 残っているピースの(有限)集合
+  hasBot : ⊥ ∈ pieces -- 毒ピースが含まれる
+  downClosed : -- 残っているピースの集合は下に閉
+    ∀ p q, p ∈ pieces → q ≤ p → q ∈ pieces
 
-/-- 盤面のサイズをセルの数で定義
+/-- 盤面のサイズを定義 (残っているピースの個数)
   NOTE : winning の定義が整礎再帰であることを示す際に使う -/
 @[simp, grind]
-instance : SizeOf (Board α) where
-  sizeOf b := b.cells.card
+instance Board.SizeOf: SizeOf (Board α) where
+  sizeOf b := b.pieces.card
 
-/-- 最終盤面(毒セルのみの負け盤面) -/
+/-- 毒ピースのみの最終盤面 (負け盤面) -/
 @[simp, grind]
 def Board.terminal (α : Type)
-  [PartialOrder α] [OrderBot α] [DecidableEq α] [DecidableRel (α := α) (· ≤ ·)]
+  [PartialOrder α] [OrderBot α] [DecidableEq α] [DecidableLE α]
   : Board α where
-  cells := {⊥}
+  pieces := {⊥}
   hasBot := by grind
   downClosed := by
     intro p q hqp
@@ -42,23 +42,21 @@ def Board.isTerminal (b : Board α) : Prop :=
 
 /- ## move の定義 -/
 
-/-- 盤面 b から、セル p を選んで取った盤面 b' を返す -/
+/-- 盤面 b から、ピース p を選んで取った盤面 b' を返す -/
 @[simp, grind]
 def Board.move (b : Board α) (p : α) : Option (Board α) :=
-  if h : p ∈ b.cells ∧ p ≠ ⊥ then
+  if h : p ∈ b.pieces ∧ p ≠ ⊥ then
     --
-    let cells := { q ∈ b.cells | ¬ p ≤ q }
-    --
-    let hasBot : ⊥ ∈ cells := by
-      simp [cells]
+    let pieces := { q ∈ b.pieces | ¬ p ≤ q }
+    let hasBot : ⊥ ∈ pieces := by
+      simp [pieces]
+      cases b with grind
+    let downClosed : ∀ p q, p ∈ pieces → q ≤ p → q ∈ pieces := by
       cases b with grind
     --
-    let downClosed : ∀ p q, p ∈ cells → q ≤ p → q ∈ cells := by
-      cases b with grind
-    --
-    some <| .mk cells hasBot downClosed -- p が合法手の場合 some b'
+    some <| .mk pieces hasBot downClosed -- p が合法手の場合 some b'
   else
-    none -- p が合法手でない場合は失敗
+    none -- p が合法手でない場合 失敗
 
 /-- 盤面 b から b' への合法手がある -/
 @[simp, grind]
@@ -89,8 +87,7 @@ def Board.winning (b : Board α) : Prop :=
   ∃ (b' : Board α) (_ : legalMove b b'), ¬ b'.winning
   decreasing_by grind
 
-/-- 盤面 b が負け盤面である
-  (どんな一手をとっても相手に勝ち盤面を与える) -/
+/-- 盤面 b が負け盤面である -/
 @[simp, grind]
 def Board.losing (b : Board α) : Prop :=
   ¬ b.winning
@@ -105,7 +102,7 @@ theorem Board.terminal_losing :
 
 /-- 真の最大元(最小元と異なる最大元)が存在する -/
 def Board.hasTtop (b : Board α) : Prop :=
-  ∃ ttop ∈ b.cells, (∀ a ∈ b.cells, a ≤ ttop) ∧ ttop ≠ ⊥
+  ∃ ttop ∈ b.pieces, (∀ a ∈ b.pieces, a ≤ ttop) ∧ ttop ≠ ⊥
 
 /- ## 補題 -/
 
