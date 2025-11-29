@@ -15,7 +15,7 @@ bot(⊥) = (0,0)   (0,1)   ⋯  (0,n-1)
           (m-1,0) (m-1,1) ⋯  (m-1,n-1) = ttop
 -/
 
-/-- Chomp の盤面のマスを表す型 -/
+/-- Chomp の盤面のピースを表す型 -/
 abbrev Piece := ℕ × ℕ
 
 @[simp, grind]
@@ -31,7 +31,7 @@ theorem Piece.le_def {p q : Piece} :
   p ≤ q ↔ p.fst ≤ q.fst ∧ p.snd ≤ q.snd := by
   rfl
 
-/-- Chomp の毒マス (0, 0) -/
+/-- Chomp の毒ピース (0, 0) -/
 @[simp, grind]
 def Piece.bot : Piece := (0, 0)
 
@@ -201,11 +201,11 @@ theorem Board.rectBoard_winning {m n b hm hn}
   b.winning := by
 
   -- (Aliceが) ttop を食べる
-  let top := Piece.ttop m n
-  have h_move_top : ∃ b₁, b.move top = some b₁ := by
-    simp [move, top]
+  let ttop := Piece.ttop m n
+  have h_move_ttop : ∃ b₁, b.move ttop = some b₁ := by
+    simp [move, ttop]
     grind
-  obtain ⟨b₁, hb₁⟩ := h_move_top
+  obtain ⟨b₁, hb₁⟩ := h_move_ttop
   -- b₁ はtopが食べられた盤面
   by_cases h₁ : b₁.losing
   · grind
