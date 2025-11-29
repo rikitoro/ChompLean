@@ -12,7 +12,7 @@ poison
 bot(⊥) = (0,0)   (0,1)   ⋯  (0,n-1)
           (1,0)   (1,1)   ⋯  (1,n-1)
           ⋮      ⋮           ⋮
-          (m-1,0) (m-1,1) ⋯  (m-1,n-1) = top
+          (m-1,0) (m-1,1) ⋯  (m-1,n-1) = ttop
 -/
 
 /-- Chomp の盤面のマスを表す型 -/
@@ -44,18 +44,17 @@ theorem Piece.bot_le : ∀ p, ⊥ ≤ p := by
 
 /-- Chomp の 2 次元盤面の定義 -/
 structure Board where
-  pieces : Finset Piece   -- 残っているマスの集合
-  hasBot : ⊥ ∈ pieces  -- 毒マス⊥が含まれている
-  downClosed :          -- マス p が残っていればその左下マス q (q ≤ p)も残っている
+  pieces : Finset Piece   -- 残っているピースの集合
+  hasBot : ⊥ ∈ pieces   -- 毒ピース⊥が含まれている
+  downClosed :            -- ピース p が残っていればその左上 q (q ≤ p)も残っている
     ∀ p q, p ∈ pieces → q ≤ p → q ∈ pieces
 
-/-- 盤面のサイズをマスの数で定める
+/-- 盤面のサイズ (残っているピースの個数)
   NOTE : winning の定義が整礎再帰であることを示す際に使う -/
 instance Board.SizeOf : SizeOf Board where
   sizeOf b := b.pieces.card
 
-/-- 最終盤面の定義
-  毒マス ⊥ のみ残っている -/
+/-- 毒ピースのみの最終盤面の定義 (負け盤面) -/
 @[simp, grind]
 def Board.terminal : Board where
   pieces := {⊥}
@@ -71,25 +70,21 @@ def Board.isTerminal (b : Board) : Prop :=
 
 /- ## move の定義 -/
 
-/-- 1 手進めた盤面を返す
-  残っているマス p をとったらその右下のマス q (p ≤ q) もすべて削除した盤面 b を返す(some b)
-  毒マスや残っているマス以外をとった場合は失敗none -/
+/-- 盤面 b からピース p を選んで一手進めた盤面 b' を返す -/
 @[simp, grind]
 def Board.move (b : Board) (p : Piece) : Option Board :=
   if h : p ∈ b.pieces ∧ p ≠ ⊥ then
     --
-    let pieces := { q ∈ b.pieces | ¬ p ≤ q } -- b.Pieces.filter (fun q ↦ ¬ p ≤ q)
-    --
+    let pieces := { q ∈ b.pieces | ¬ p ≤ q } -- b.pieces.filter (fun q ↦ ¬ p ≤ q)
     let botIn : ⊥ ∈ pieces := by
       simp [pieces]
       cases b with grind
-    --
     let downClosed : ∀ p q, p ∈ pieces → q ≤ p → q ∈ pieces := by
       cases b with grind
     --
-    some <| .mk pieces botIn downClosed
+    some <| .mk pieces botIn downClosed -- 合法手の場合 some b' を返す
   else
-    none
+    none -- 合法手でない場合は none を返す
 
 /-- b から b' へ合法手 1 手で進めることができる -/
 @[simp, grind]
@@ -97,7 +92,7 @@ def Board.legalMove (b b' : Board) : Prop :=
   ∃ p : Piece, b.move p = some b'
 
 
-/-- 一手進めると盤面のマスの数は必ず減る
+/-- 一手進めると盤面のピースの数は必ず減る
   NOTE : winning の定義が整礎再帰であることを示す際に使う -/
 @[simp, grind ., grind →]
 theorem Board.move_size_lt {b b' : Board} (h : legalMove b b') :
@@ -205,7 +200,7 @@ theorem Board.rectBoard_winning {m n b hm hn}
   (hrect : b = rectBoard m n hm hn) (hnterm : ¬ b.isTerminal) :
   b.winning := by
 
-  -- (Aliceが) top を食べる
+  -- (Aliceが) ttop を食べる
   let top := Piece.ttop m n
   have h_move_top : ∃ b₁, b.move top = some b₁ := by
     simp [move, top]
