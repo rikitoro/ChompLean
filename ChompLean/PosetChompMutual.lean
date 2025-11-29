@@ -109,7 +109,7 @@ theorem Board.terminal_losing :
 
 /-- losing は winning の否定と同値 -/
 @[simp, grind =]
-theorem Board.losing_iff_not_winning' (b : Board α) :
+theorem Board.losing_iff_not_winning (b : Board α) :
   b.losing ↔ ¬ b.winning := by
   apply Iff.intro <;> intro h
   · rw [winning]
@@ -117,13 +117,13 @@ theorem Board.losing_iff_not_winning' (b : Board α) :
     intro b' hbb'
     have ih : b'.losing ↔ ¬ b'.winning := by -- 数学的帰納法
       have hlt : sizeOf b' < sizeOf b := by grind
-      exact losing_iff_not_winning' b' -- 自身を再帰で呼ぶ (hlt で整礎性を示す)
+      exact losing_iff_not_winning b' -- 自身を再帰で呼ぶ (hlt で整礎性を示す)
     grind
   · rw [losing]
     intro b' hbb'
     have ih : b'.losing ↔ ¬ b'.winning := by -- 数学的帰納法
       have hlt : sizeOf b' < sizeOf b := by grind
-      exact losing_iff_not_winning' b' -- 自身を再帰で呼ぶ (hlt で整礎性を示す)
+      exact losing_iff_not_winning b' -- 自身を再帰で呼ぶ (hlt で整礎性を示す)
     grind
 
 
