@@ -4,7 +4,6 @@ import Mathlib.Order.Basic
 
 /- # 有限半順序集合での Chomp ゲームの先手必勝性に関する証明 -/
 
-
 /- ## ゲーム盤面の定義 -/
 
 variable {α : Type}  -- 各ピースの型：最小元(毒ピース)を持つ半順序集合
@@ -21,7 +20,6 @@ structure Board (α : Type) -- α は各ピースを表す型
 
 /-- 盤面のサイズを定義 (残っているピースの個数)
   NOTE : winning の定義が整礎再帰であることを示す際に使う -/
-@[simp, grind]
 instance Board.SizeOf: SizeOf (Board α) where
   sizeOf b := b.pieces.card
 
@@ -36,7 +34,6 @@ def Board.terminal (α : Type)
     intro p q hqp
     simp_all
 
-@[simp, grind]
 def Board.isTerminal (b : Board α) : Prop :=
   b = terminal α
 
@@ -65,7 +62,7 @@ def Board.legalMove (b b' : Board α) : Prop :=
 
 /-- 一手進めると盤面のサイズが小さくなる
   NOTE : winning の定義が整礎再帰であることを示す際に使う -/
-@[simp, grind ., grind →]
+@[simp, grind →]
 theorem Board.move_size_lt {b b' : Board α} (h : legalMove b b') :
   sizeOf b' < sizeOf b := by
   simp_all
@@ -97,7 +94,6 @@ def Board.losing (b : Board α) : Prop :=
   ¬ b.winning
 
 /-- 最終盤面は負け局面 -/
-@[simp, grind .]
 theorem Board.terminal_losing :
   terminal α |>.losing := by
   grind
@@ -112,7 +108,7 @@ def Board.hasTtop (b : Board α) : Prop :=
 
 /-- p ≤ q のとき、q を取ってから p を取る手順は、
   はじめから p を取る手順と同じ盤面を与える (1手目はキャンセルできる) -/
-@[simp, grind ., grind →]
+@[simp, grind →]
 theorem Board.move_move_of_le {b b₁ b₂ : Board α} {p q : α}
   (hpq : p ≤ q) (h₁ : b.move q = some b₁) (h₂ : b₁.move p = some b₂) :
   b.move p = some b₂ := by
@@ -132,5 +128,6 @@ theorem Board.winning_of_hasTtop {b₀ : Board α} (h : b₀.hasTtop) :
   have h_move_ttop : ∃ b₁, b₀.move ttop = some b₁ := by
     simp_all
   obtain ⟨b₁, hb₁⟩ := h_move_ttop -- 後手は b₀ から ttop を取った盤面 b₁ を受け取る
-  by_cases h₁ : b₁.losing
-    <;> grind -- 戦略盗用
+  by_cases h₁ : b₁.losing -- b₁ が負け盤面かどうかで場合分け(排中律)
+  . grind -- b₁ が負け盤面の場合: そもそも b₀ は勝ち盤面
+  . grind -- b₁ が勝ち盤面の場合: 後手の手を先手が真似ればよい
