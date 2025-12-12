@@ -131,3 +131,9 @@ theorem Board.winning_of_hasTtop {b₀ : Board α} (h : b₀.hasTtop) :
   by_cases h₁ : b₁.losing -- b₁ が負け盤面かどうかで場合分け(排中律)
   . grind -- b₁ が負け盤面の場合: そもそも b₀ は勝ち盤面
   . grind -- b₁ が勝ち盤面の場合: 後手の手を先手が真似ればよい
+
+/-
+  # references
+  - えびまラボ (YouTube channel),毒チョコゲームの必勝法【ゆっくり解説】,
+    https://www.youtube.com/watch?v=agRtx_XREtA
+-/
