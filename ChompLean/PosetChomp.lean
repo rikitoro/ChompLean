@@ -87,6 +87,10 @@ def Board.winning (b : Board α) : Prop :=
   ∃ (b' : Board α) (_ : legalMove b b'), ¬ b'.winning
   decreasing_by grind
 
+example (b : Board α) :
+  b.winning ↔ ∃ b', b.legalMove b' ∧  ¬ b'.winning := by
+  grind
+
 /-- 盤面 b が負け盤面である -/
 @[simp, grind]
 def Board.losing (b : Board α) : Prop :=
